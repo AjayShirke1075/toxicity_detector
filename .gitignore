@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+ENV/
+
+# VSCode
+.vscode/
+
+# Models and large files
+models/
+*.pkl
+*.joblib
+*.h5
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Streamlit secrets
+.secrets.toml
