@@ -7,3 +7,4 @@ seaborn
 streamlit
 torch
 transformers
+beautifulsoup4
