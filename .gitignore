@@ -21,3 +21,6 @@ Thumbs.db
 
 # Streamlit secrets
 .secrets.toml
+
+# Nested clone
+toxicity_detector/
