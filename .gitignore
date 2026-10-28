@@ -9,11 +9,12 @@ ENV/
 # VSCode
 .vscode/
 
-# Models and large files
-models/
-*.pkl
-*.joblib
+# Large transformer models / caches (keep lightweight baseline models in git)
+models/transformer/
+models/transformer_model/
 *.h5
+*.bin
+*.safetensors
 
 # System files
 .DS_Store

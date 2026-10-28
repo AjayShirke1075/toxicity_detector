@@ -22,22 +22,52 @@ from src.explain import token_contributions_from_pipeline
 # =========================================================
 @st.cache_resource(show_spinner=False)
 def load_baseline_model():
-    """Load TF-IDF vectorizer and trained classifier pipeline."""
+    """Load TF-IDF vectorizer and trained classifier pipeline with automatic recovery."""
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    model_path = os.path.join(base, "models", "baseline_clf.joblib")
-    vect_path = os.path.join(base, "models", "tfidf_vectorizer.joblib")
+    models_dir = os.path.join(base, "models")
+    os.makedirs(models_dir, exist_ok=True)
 
-    if not os.path.exists(model_path) or not os.path.exists(vect_path):
-        return None
-
-    clf = joblib.load(model_path)
-    vectorizer = joblib.load(vect_path)
+    model_path = os.path.join(models_dir, "baseline_clf.joblib")
+    vect_path = os.path.join(models_dir, "tfidf_vectorizer.joblib")
+    toxic_pkl = os.path.join(models_dir, "toxic_model.pkl")
 
     from sklearn.pipeline import Pipeline
-    return Pipeline([
-        ("tfidf", vectorizer),
-        ("clf", clf)
-    ])
+
+    # 1. Primary: load baseline_clf and tfidf_vectorizer if available
+    if os.path.exists(model_path) and os.path.exists(vect_path):
+        try:
+            clf = joblib.load(model_path)
+            vectorizer = joblib.load(vect_path)
+            return Pipeline([
+                ("tfidf", vectorizer),
+                ("clf", clf)
+            ])
+        except Exception:
+            pass
+
+    # 2. Secondary: load toxic_model.pkl pipeline if available
+    if os.path.exists(toxic_pkl):
+        try:
+            pipe = joblib.load(toxic_pkl)
+            if hasattr(pipe, "predict_proba"):
+                return pipe
+        except Exception:
+            pass
+
+    # 3. Fallback: Automatically generate and train baseline on the fly
+    try:
+        from src.baseline import get_toy_data, train_and_save
+        df = get_toy_data()
+        train_and_save(df, vect_path, model_path)
+        clf = joblib.load(model_path)
+        vectorizer = joblib.load(vect_path)
+        return Pipeline([
+            ("tfidf", vectorizer),
+            ("clf", clf)
+        ])
+    except Exception as e:
+        st.error(f"Failed to initialize baseline model: {e}")
+        return None
 
 # =========================================================
 # 🎨 SENIOR-ENGINEER ENTERPRISE DESIGN SYSTEM
